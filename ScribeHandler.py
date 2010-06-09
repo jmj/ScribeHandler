@@ -3,11 +3,13 @@ from scribe import scribe
 from thrift.transport import TTransport, TSocket
 from thrift.protocol import TBinaryProtocol
 
+class ScribeLogError(Exception):
+    pass
+
 class ScribeHandler(logging.Handler):
-    def __init__(self, *args, **kw):
-        host = kw.get('host', '127.0.0.1')
-        port = kw.get('port', 1463)
-        self.category = kw.get('category', 'error')
+    def __init__(self, host='127.0.0.1', port=1463,
+        category=None, **kw):
+        self.category = category
 
         socket = TSocket.TSocket(host=host, port=port)
         self.transport = TTransport.TFramedTransport(socket)
@@ -18,11 +20,19 @@ class ScribeHandler(logging.Handler):
 
 
     def emit(self, record):
-        log_entry = scribe.LogEntry(category=self.category,
+        if self.category is None:
+            category = record.levelname
+        else:
+            category = self.category
+        log_entry = scribe.LogEntry(category=category,
             message=record.getMessage())
-        self.transport.open()
-        result = self.client.Log(messages=[log_entry])
-        self.transport.close()
 
+        try:
+            self.transport.open()
+            result = self.client.Log(messages=[log_entry])
+            self.transport.close()
 
-
+            if result != scribe.ResultCode.OK:
+                raise ScribeLogError(result)
+        except:
+            self.raiseException(record)

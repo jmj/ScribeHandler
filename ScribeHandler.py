@@ -1,5 +1,7 @@
 import logging, socket
 
+from urlparse import urlparse
+
 from scribe import scribe
 from thrift.transport import TTransport, TSocket
 from thrift.protocol import TBinaryProtocol
@@ -9,15 +11,20 @@ class ScribeLogError(Exception):
 
 class ScribeHandler(logging.Handler):
     def __init__(self, host='127.0.0.1', port=1463,
-        category=None, **kw):
+        category=None, framed=True):
 
         if category is None:
             self.category = '%(hostname)s-%(loggername)s'
 
         socket = TSocket.TSocket(host=host, port=port)
-        self.transport = TTransport.TFramedTransport(socket)
-        protocol = TBinaryProtocol.TBinaryProtocol(trans=self.transport, strictRead=False, strictWrite=False)
-        self.client = scribe.Client(iprot=protocol, oprot=protocol)
+        if framed:
+            self.transport = TTransport.TFramedTransport(socket)
+        else:
+            self.transport = TTransport.TBufferedTransport(socket)
+
+        protocol = TBinaryProtocol.TBinaryProtocol(trans=self.transport,
+            strictRead=False, strictWrite=False)
+        self.client = scribe.Client(protocol)
 
         logging.Handler.__init__(self)
 

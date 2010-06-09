@@ -1,0 +1,44 @@
+ScribeHandler is a simple proxy layer that works with the python standard logging module (http://docs.python.org/library/logging.html).  ScribeHandler acts a a handler object that gets added to a logger in the standard way.
+
+Important bits:
+
+When instantiating the handler, you will want to specify the connection setting to scribed.  The following keyword arguments are reconized (and defaults):
+
+Argument            Default
+---------------------------
+host                172.0.0.1
+port                1463
+category            %(hostname)s-%(loggername)s
+framed              True
+
+- Host and port, should be obvious
+
+- If 'framed' is True, then thrift.transport.TTransport.TFramedTransport()
+    is used.
+- If 'framed' is False, then thrift.transport.TTransport.TBufferedTransport()
+    is used.
+
+- category is translated into the category parameter to scribe.LogEntry()
+    object.  It should be a standard format string using mapping keys.
+    The following are the reconized mapping keys:
+
+    Key Name        Source
+    ----------------------
+    module          logging.LogRecord.module
+    levelname       logging.LogRecord.levelname
+    loggername      logging.LogRecord.name
+    processname     logging.LogRecord.processName
+    hostname        socket.gethostname()
+
+
+Here's a simple example of how to use it:
+
+import logging
+from ScribeHandler import ScribeHandler
+mylogger = logging.getLogger('ScribeLogger')
+mylogger.setLevel(logging.DEBUG)
+handler = ScribeHandler(category='%(hostname)s-%(levelname)s')
+mylogger.addHandler(handler)
+
+mylogger.debug('stuff happens')
+

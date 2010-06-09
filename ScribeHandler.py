@@ -15,6 +15,8 @@ class ScribeHandler(logging.Handler):
 
         if category is None:
             self.category = '%(hostname)s-%(loggername)s'
+        else:
+            self.category = category
 
         socket = TSocket.TSocket(host=host, port=port)
         if framed:

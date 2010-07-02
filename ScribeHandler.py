@@ -6,6 +6,8 @@ from scribe import scribe
 from thrift.transport import TTransport, TSocket, THttpClient
 from thrift.protocol import TBinaryProtocol
 
+version='0.02'
+
 class ScribeLogError(Exception): pass
 class ScribeTransportError(Exception): pass
 

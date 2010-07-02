@@ -7,7 +7,7 @@ setup(
     author='Jeremy Jones',
     author_email='jeremyj@letifer.org',
     url='http://github.com/jmj/ScribeHandler',
-    version='0.01',
+    version='0.02',
     py_modules=['ScribeHandler'],
     license='GPLv2',
     long_description=open('README').read()

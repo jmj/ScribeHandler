@@ -1,8 +1,12 @@
-ScribeHandler is a simple proxy layer that works with the python standard logging module (http://docs.python.org/library/logging.html).  ScribeHandler acts a a handler object that gets added to a logger in the standard way.
+ScribeHandler is a simple proxy layer that works with the python standard
+logging module (http://docs.python.org/library/logging.html).  ScribeHandler
+acts a a handler object that gets added to a logger in the standard way.
 
 Important bits:
 
-When instantiating the handler, you will want to specify the connection setting to scribed.  The following keyword arguments are reconized (and defaults):
+When instantiating the handler, you will want to specify the connection
+setting to scribed.  The following keyword arguments are reconized (and
+defaults):
 
 Argument            Default
 ---------------------------

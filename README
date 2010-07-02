@@ -9,14 +9,25 @@ Argument            Default
 host                172.0.0.1
 port                1463
 category            %(hostname)s-%(loggername)s
-framed              True
+transport           ScribeHandler.FRAMED
+uri                 None
 
 - Host and port, should be obvious
 
-- If 'framed' is True, then thrift.transport.TTransport.TFramedTransport()
-    is used.
-- If 'framed' is False, then thrift.transport.TTransport.TBufferedTransport()
-    is used.
+- If transport is ScribeHandler.FRAMED, then
+    thrift.transport.TTransport.TFramedTransport() is used.
+- If transport is ScribeHandler.BUFFERED, then
+    thrift.transport.TTransport.TBufferedTransport() is used.
+- If transport is ScribeHandler.HTTP then
+    thrift.transport.THttpClient.THttpClient() is used and uri MUST NOT be
+    None
+- If transport is None then you can assign any acceptable Thrift/Scribe
+    transport via 
+
+        ScirbeHandler.transport = <transport>
+
+    where <transport> is a valid Scibe/Thrift transport (this is an attempt at
+    future proofing).
 
 - category is translated into the category parameter to scribe.LogEntry()
     object.  It should be a standard format string using mapping keys.
@@ -34,10 +45,10 @@ framed              True
 Here's a simple example of how to use it:
 
 import logging
-from ScribeHandler import ScribeHandler
+import ScribeHandler
 mylogger = logging.getLogger('ScribeLogger')
 mylogger.setLevel(logging.DEBUG)
-handler = ScribeHandler(category='%(hostname)s-%(levelname)s')
+handler = ScribeHandler.ScribeHandler(category='%(hostname)s-%(levelname)s')
 mylogger.addHandler(handler)
 
 mylogger.debug('stuff happens')

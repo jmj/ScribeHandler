@@ -92,11 +92,18 @@ class ScribeHandler(logging.Handler):
         if (self.client is None) or (self.transport is None):
             raise ScribeTransportError('No transport defined')
 
+        # It looks like pypy Does not have logging.logRecord.processName
+        # This is a hackish workaround.
+        if hasattr(record, 'processName'):
+            pn = record.processName
+        else:
+            pn = 'Unknown'
+
         category = self.category % {
             'module' : record.module,
             'levelname': record.levelname,
             'loggername' : record.name,
-            'processName' : record.processName,
+            'processName' : pn,
             'hostname' : socket.gethostname(),
         }
 

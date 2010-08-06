@@ -118,6 +118,6 @@ class ScribeHandler(logging.Handler):
             if result != scribe.ResultCode.OK:
                 raise ScribeLogError(result)
         except:
-            self.raiseException(record)
+            self.handleError(record)
 
 

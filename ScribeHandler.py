@@ -88,6 +88,18 @@ class ScribeHandler(logging.Handler):
 
 
     def emit(self, record):
+        """
+        Emit a record.
+
+        If a formatter is specified, it is used to format the record.
+        The record is then logged to Scribe with a trailing newline.
+        """
+        # apply formatting to the record.
+        msg = self.format(record)
+        # for backwards-compatibility, do not add in a line break if it
+        # is already being manually added into each record.
+        if not msg.startswith('\n') or msg.endswith('\n'):
+          msg += '\n'
 
         if (self.client is None) or (self.transport is None):
             raise ScribeTransportError('No transport defined')
@@ -107,8 +119,7 @@ class ScribeHandler(logging.Handler):
             'hostname' : socket.gethostname(),
         }
 
-        log_entry = scribe.LogEntry(category=category,
-            message=record.getMessage())
+        log_entry = scribe.LogEntry(category=category, message=msg)
 
         try:
             self.transport.open()

@@ -35,6 +35,7 @@ version='0.02'
 
 class ScribeLogError(Exception): pass
 class ScribeTransportError(Exception): pass
+class ScribeHandlerBufferError(Exception): pass
 
 FRAMED = 1
 UNFRAMED = 2
@@ -43,7 +44,10 @@ HTTP = 3
 
 class ScribeHandler(logging.Handler):
     def __init__(self, host='127.0.0.1', port=1463,
-        category=None, transport=FRAMED, uri=None):
+        category=None, transport=FRAMED, uri=None, file_buffer=None):
+
+        self.__buffer = None
+        self.file_buffer = file_buffer
 
         if category is None:
             self.category = '%(hostname)s-%(loggername)s'
@@ -73,6 +77,21 @@ class ScribeHandler(logging.Handler):
         #self._make_client()
         logging.Handler.__init__(self)
 
+    def __get_buffer(self):
+        if self.file_buffer is None:
+            raise ScribeHandlerBufferError('No buffer file defined')
+
+        try:
+            self.__buffer.keys()
+        except ValueError:
+            self.__buffer = None
+
+        if self.__buffer is None:
+            self.__buffer = shelve.open(self.file_buffer)
+
+        return self.__buffer
+
+
     def _make_client(self):
 
         protocol = TBinaryProtocol.TBinaryProtocol(trans=self.transport,
@@ -85,6 +104,40 @@ class ScribeHandler(logging.Handler):
 
         if var == 'transport':
             self._make_client()
+
+    def get_entries(self, new):
+        if self.file_buffer is not None:
+            self.__get_buffer()
+        else:
+            return [(None,new)]
+
+        self.add_entry(new)
+
+        sortedkeys = self.__buffer.keys()
+        sortedkeys.sort()
+
+        for k in sortedkeys:
+            yield (k,self.__buffer[k)
+
+        self.__buffer.close()
+
+    def pop_entry(self, key):
+        if self.file_buffer is None:
+            return
+        ## buffer should already be open
+        self.__buffer.pop(key)
+        self.__buffer.sync()
+
+    def add_entry(self, new):
+        if self.file_buffer is None:
+            return
+
+        self.__get_buffer()
+
+        topkey = max(self.__buffer.keys())
+        newkey = '%s' % (int(topkey) += 1)
+        self.__buffer[newkey] = new
+        self.__buffer.sync()
 
 
     def emit(self, record):
@@ -123,12 +176,20 @@ class ScribeHandler(logging.Handler):
 
         try:
             self.transport.open()
-            result = self.client.Log(messages=[log_entry])
+
+            for le in self.get_entries(log_entry):
+                result = self.client.Log(messages=[le[1]])
+                if result != scribe.ResultCode.OK:
+                    raise ScribeLogError(result)
+                self.pop_entry(le[0]
+
             self.transport.close()
 
-            if result != scribe.ResultCode.OK:
-                raise ScribeLogError(result)
         except:
+            ## sync and close the buffer
+            if self.file_buffer is not None:
+                self.__buffer.sync()
+                self.__buffer.close()
             self.handleError(record)
 
 

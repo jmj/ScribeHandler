@@ -109,7 +109,8 @@ class ScribeHandler(logging.Handler):
         if self.file_buffer is not None:
             self.__get_buffer()
         else:
-            return [(None,new)]
+            yield (None,new)
+            return
 
         self.add_entry(new)
 
@@ -117,7 +118,7 @@ class ScribeHandler(logging.Handler):
         sortedkeys.sort()
 
         for k in sortedkeys:
-            yield (k,self.__buffer[k)
+            yield (k,self.__buffer[k])
 
         self.__buffer.close()
 
@@ -135,7 +136,7 @@ class ScribeHandler(logging.Handler):
         self.__get_buffer()
 
         topkey = max(self.__buffer.keys())
-        newkey = '%s' % (int(topkey) += 1)
+        newkey = '%s' % (int(topkey) + 1)
         self.__buffer[newkey] = new
         self.__buffer.sync()
 
@@ -181,7 +182,7 @@ class ScribeHandler(logging.Handler):
                 result = self.client.Log(messages=[le[1]])
                 if result != scribe.ResultCode.OK:
                     raise ScribeLogError(result)
-                self.pop_entry(le[0]
+                self.pop_entry(le[0])
 
             self.transport.close()
 

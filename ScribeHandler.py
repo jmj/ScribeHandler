@@ -23,7 +23,7 @@
 # jeremyj (at) letifer (dot) org
 
 
-import logging, socket
+import logging, socket, shelve
 
 from urlparse import urlparse
 
@@ -78,12 +78,14 @@ class ScribeHandler(logging.Handler):
         #self._make_client()
         logging.Handler.__init__(self)
 
-    def __get_buffer(self):
+    def _get_buffer(self):
         if self.file_buffer is None:
             raise ScribeHandlerBufferError('No buffer file defined')
 
         try:
             self.__buffer.keys()
+        except AttributeError:
+            self.__buffer = None
         except ValueError:
             self.__buffer = None
 
@@ -108,7 +110,7 @@ class ScribeHandler(logging.Handler):
 
     def get_entries(self, new):
         if self.file_buffer is not None:
-            self.__get_buffer()
+            self._get_buffer()
         else:
             yield (None,new)
             return
@@ -134,9 +136,13 @@ class ScribeHandler(logging.Handler):
         if self.file_buffer is None:
             return
 
-        self.__get_buffer()
+        self._get_buffer()
 
-        topkey = max(self.__buffer.keys())
+        try:
+            topkey = max(self.__buffer.keys())
+        except ValueError:
+            topkey = -1
+
         newkey = '%s' % (int(topkey) + 1)
         self.__buffer[newkey] = new
         self.__buffer.sync()
@@ -190,6 +196,8 @@ class ScribeHandler(logging.Handler):
         except:
             ## sync and close the buffer
             if self.file_buffer is not None:
+                ## this can end up adding dupliucates
+                self.add_entry(log_entry)
                 self.__buffer.sync()
                 self.__buffer.close()
             self.handleError(record)

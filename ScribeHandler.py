@@ -30,6 +30,8 @@ from urlparse import urlparse
 from scribe import scribe
 
 from thrift.transport import TTransport, TSocket, THttpClient
+from thrift.transport.TTransport import TTransportException
+
 from thrift.protocol import TBinaryProtocol
 
 version='0.02'
@@ -193,13 +195,18 @@ class ScribeHandler(logging.Handler):
 
             self.transport.close()
 
-        except:
-            ## sync and close the buffer
+        except TTransportException:
             if self.file_buffer is not None:
-                ## this can end up adding dupliucates
                 self.add_entry(log_entry)
-                self.__buffer.sync()
-                self.__buffer.close()
+            self._do_error(record)
+        except:
+                self._do_error(record)
+
+    def _do_error(self, record):
+        if self.file_buffer is not None:
+            self.__buffer.sync()
+            self.__buffer.close()
+        else:
             self.handleError(record)
 
 

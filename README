@@ -52,7 +52,7 @@ import logging
 import ScribeHandler
 mylogger = logging.getLogger('ScribeLogger')
 mylogger.setLevel(logging.DEBUG)
-handler = ScribeHandler.ScribeHandler(category='%(hostname)s-%(levelname)s')
+handler = ScribeHandler.ScribeHandler(category='%(hostname)s-%(levelname)s', file_buffer='/tmp/logbuffer')
 mylogger.addHandler(handler)
 
 mylogger.debug('stuff happens')

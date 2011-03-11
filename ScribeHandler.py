@@ -27,11 +27,7 @@ import logging, socket
 
 from urlparse import urlparse
 
-try:
-    from scribe import scribe
-except ImportError:
-    # Newer versions of scribe named the scribe object as Scribe
-    from scribe import Scribe
+from scribe import scribe
 
 from thrift.transport import TTransport, TSocket, THttpClient
 from thrift.protocol import TBinaryProtocol

@@ -34,7 +34,7 @@ from thrift.transport.TTransport import TTransportException
 
 from thrift.protocol import TBinaryProtocol
 
-version='0.02'
+version='0.05'
 
 class ScribeLogError(Exception): pass
 class ScribeTransportError(Exception): pass

@@ -10,5 +10,16 @@ setup(
     version='0.05',
     py_modules=['ScribeHandler'],
     license='GPLv2',
-    long_description=open('README').read()
+    long_description=open('README').read(),
+    description='ScribeHandler is a simple proxy layer that works with the python standard logging module',
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+    ],
+    keywords=[
+        'scribe', 'logging', 'scribed'
+    ],
+    download_url='http://pypi.python.org/pypi/ScribeHandler',
+    platform='any',
+
     )

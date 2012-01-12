@@ -23,9 +23,8 @@
 # jeremyj (at) letifer (dot) org
 
 
-import logging, socket, shelve
-
-from urlparse import urlparse
+import logging, shelve
+import socket as skt
 
 from scribe import scribe
 
@@ -179,7 +178,7 @@ class ScribeHandler(logging.Handler):
             'levelname': record.levelname,
             'loggername' : record.name,
             'processName' : pn,
-            'hostname' : socket.gethostname(),
+            'hostname' : skt.gethostname(),
         }
 
         log_entry = scribe.LogEntry(category=category, message=msg)
